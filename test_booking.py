@@ -107,6 +107,10 @@ class TestReasonCodes(unittest.TestCase):
     def test_reason_overlap(self):
         self.assertEqual(check_booking(659, 700, NOW, False, EXISTING), "OVERLAP")
 
+    def test_priority_blocked_wins_over_overlap(self):
+        # 610-650 overlaps (600, 660); the room is also blocked -> AC3 is reported first.
+        self.assertEqual(check_booking(610, 650, NOW, True, EXISTING), "BLOCKED")
+
 
 if __name__ == "__main__":
     unittest.main()
