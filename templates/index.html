@@ -74,7 +74,7 @@
           {% for room in matches %}
             <li>
               <label class="room{% if room.blocked %} room--blocked{% endif %}">
-                <input type="radio" name="room" value="{{ room.id }}"
+                <input type="radio" name="room" value="{{ room.id }}" onchange="this.form.submit()"
                        {% if selected and selected.id == room.id %}checked{% endif %}>
                 <span class="room-body">
                   <span class="room-name">
