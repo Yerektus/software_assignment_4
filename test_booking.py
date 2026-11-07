@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from booking import can_book
+from booking import can_book, check_booking
 
 NOW = 540
 EXISTING = [(600, 660)]
@@ -89,6 +89,23 @@ class TestAC5NoMutation(unittest.TestCase):
             result = can_book(start, end, NOW, False, existing)
             self.assertIsInstance(result, bool)
         self.assertEqual(existing, before)
+
+
+class TestReasonCodes(unittest.TestCase):
+    def test_reason_blocked(self):
+        self.assertEqual(check_booking(660, 720, NOW, True, EXISTING), "BLOCKED")
+
+    def test_reason_invalid_range(self):
+        self.assertEqual(check_booking(700, 650, NOW, False, EXISTING), "INVALID_RANGE")
+
+    def test_reason_in_past(self):
+        self.assertEqual(check_booking(540, 570, NOW, False, EXISTING), "IN_PAST")
+
+    def test_reason_too_long(self):
+        self.assertEqual(check_booking(720, 841, NOW, False, EXISTING), "TOO_LONG")
+
+    def test_reason_overlap(self):
+        self.assertEqual(check_booking(659, 700, NOW, False, EXISTING), "OVERLAP")
 
 
 if __name__ == "__main__":
