@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from booking_v1 import can_book
+from booking import can_book
 
 NOW = 540
 EXISTING = [(600, 660)]
