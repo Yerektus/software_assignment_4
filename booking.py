@@ -41,3 +41,8 @@ def check_booking(start, end, now, blocked, existing):
 def can_book(start, end, now, blocked, existing):
     """Return True only if the request satisfies AC1-AC4, else False."""
     return check_booking(start, end, now, blocked, existing) is None
+
+
+def check_room(room, start, end, now):
+    """Like check_booking, using this room's own blocked flag and bookings."""
+    return check_booking(start, end, now, room.blocked, room.bookings)
