@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Room Availability Checker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="page">
+  <header class="page-header">
+    <h1>Room Availability Checker</h1>
+    <p class="now">Current time: <strong>{{ now }}</strong> <span class="muted">(fixed for this prototype)</span></p>
+  </header>
+
+  {% if errors or notice or result or hint %}
+  <section class="feedback" aria-live="polite">
+    {% for error in errors %}
+      <p class="msg msg--error" role="alert">{{ error }}</p>
+    {% endfor %}
+    {% if notice %}
+      <p class="msg msg--warn">{{ notice }}</p>
+    {% endif %}
+    {% if result %}
+      <div class="msg {{ 'msg--ok' if result.ok else 'msg--error' }}" role="status">
+        <p class="result-title">{{ result.room }}, {{ result.slot }}</p>
+        <p class="result-text">{{ result.message }}</p>
+      </div>
+    {% elif hint %}
+      <p class="msg msg--info">{{ hint }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <form method="get" action="{{ url_for('index') }}" class="card">
+    <fieldset>
+      <legend>1. Filter rooms</legend>
+      <label class="field field--narrow">
+        <span>Attendees</span>
+        <input type="number" name="attendees" min="1" step="1" inputmode="numeric"
+               value="{{ form.attendees }}" required>
+      </label>
+      <fieldset class="equipment">
+        <legend>Equipment needed</legend>
+        {% for item in equipment_options %}
+          <label class="check">
+            <input type="checkbox" name="equipment" value="{{ item }}"
+                   {% if item in form.equipment %}checked{% endif %}>
+            {{ item | replace('_', ' ') }}
+          </label>
+        {% endfor %}
+      </fieldset>
+    </fieldset>
+
+    <fieldset>
+      <legend>2. Choose a time</legend>
+      <div class="times">
+        <label class="field">
+          <span>Start (HH:MM)</span>
+          <input type="time" name="start" value="{{ form.start }}">
+        </label>
+        <label class="field">
+          <span>End (HH:MM)</span>
+          <input type="time" name="end" value="{{ form.end }}">
+        </label>
+      </div>
+      <p class="muted small">Up to {{ max_duration }} minutes, starting after {{ now }}.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>3. Pick a room</legend>
+      {% if matches %}
+        <ul class="rooms">
+          {% for room in matches %}
+            <li>
+              <label class="room{% if room.blocked %} room--blocked{% endif %}">
+                <input type="radio" name="room" value="{{ room.id }}"
+                       {% if selected and selected.id == room.id %}checked{% endif %}>
+                <span class="room-body">
+                  <span class="room-name">
+                    {{ room.name }}
+                    {% if room.blocked %}<span class="badge">Blocked</span>{% endif %}
+                  </span>
+                  <span class="room-meta">Capacity {{ room.capacity }}</span>
+                  <span class="room-meta">
+                    Equipment: {{ room.equipment | map('replace', '_', ' ') | join(', ') or 'none' }}
+                  </span>
+                  <span class="room-meta">
+                    Booked:
+                    {% for start, end in room.bookings %}{{ fmt(start) }}–{{ fmt(end) }}{{ ', ' if not loop.last }}{% else %}nothing yet{% endfor %}
+                  </span>
+                </span>
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      {% elif not errors %}
+        <p class="empty" role="status">
+          No rooms match these filters. Try fewer attendees or less equipment.
+        </p>
+      {% endif %}
+    </fieldset>
+
+    <button type="submit">Check</button>
+  </form>
+</main>
+</body>
+</html>
